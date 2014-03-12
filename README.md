@@ -77,6 +77,21 @@ Logs some data asynchronously. Data is a valid javascript object. If a base obje
 
 Cleanly closes the Redis connection (all replies will be parsed).
 
+# The NullLogger
+
+It does exactly nothing. Good for testing.
+```js
+var LogstashRedis = require('logstash-redis');
+
+var logger = LogstashRedis.createNullLogger();
+
+logger.log({ a: 1234, b: 'hello' });
+// does nothing
+
+logger.close();
+// does nothing
+```
+
 # Tests
 
 ```shell

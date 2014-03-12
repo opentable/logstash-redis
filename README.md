@@ -1,4 +1,4 @@
-logstash-redis 
+logstash-redis
 =============
 
 Uber simple Logstash logging using Redis
@@ -17,7 +17,7 @@ npm install logstash-redis
 
 # Usage
 
-Ths simple way:
+The simple way:
 ```js
 var LogstashRedis = require('logstash-redis');
 
@@ -32,9 +32,9 @@ Using a base object for each log:
 ```js
 var LogstashRedis = require('logstash-redis');
 
-var baseObject = { 
-  type: 'someValue', 
-  env: "prod-1234" 
+var baseObject = {
+  type: 'someValue',
+  env: "prod-1234"
 };
 
 var logger = new LogstashRedis('127.0.0.1', 6379, 'key', baseObject);
@@ -65,9 +65,9 @@ logger.log({ a: 1234, b: 'hello' });
 logger.close();
 ```
 
-### new (host, port, key, [base object/function])
+### new (host, port, key, [base])
 
-Initiate a Redis connection, prepares the base log object.
+Initiate a Redis connection. When the `base` parameter is specified, it is used as a base for each log object. It can be an object or a function.
 
 ### log(data, [callback])
 
@@ -76,7 +76,7 @@ Logs some data asynchronously. Data is a valid javascript object. If a base obje
 ### close([callback]);
 
 Cleanly closes the Redis connection (all replies will be parsed).
-  
+
 # Tests
 
 ```shell

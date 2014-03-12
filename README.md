@@ -49,11 +49,13 @@ Using a base function for each log:
 var LogstashRedis = require('logstash-redis');
 
 var baseFunction = function(){
-  type: 'someValue',
-  meta: {
-    timestamp: new Data().toISOString(),
-    host: require('os').hostname()
-  }
+  return  {
+    type: 'someValue',
+    meta: {
+      timestamp: new Data().toISOString(),
+      host: require('os').hostname()
+    }
+  };
 };
 
 var logger = new LogstashRedis('127.0.0.1', 6379, 'key', baseFunction);

@@ -1,6 +1,6 @@
 {
   "name": "logstash-redis",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Uber simple Logstash logging using Redis",
   "main": "index.js",
   "scripts": {

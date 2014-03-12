@@ -19,9 +19,9 @@ npm install logstash-redis
 
 The simple way:
 ```js
-var LogstashRedis = require('logstash-redis');
+var logstashRedis = require('logstash-redis');
 
-var logger = new LogstashRedis('127.0.0.1', 6379, 'key');
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key');
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -30,14 +30,14 @@ logger.close();
 
 Using a base object for each log:
 ```js
-var LogstashRedis = require('logstash-redis');
+var logstashRedis = require('logstash-redis');
 
 var baseObject = {
   type: 'someValue',
   env: "prod-1234"
 };
 
-var logger = new LogstashRedis('127.0.0.1', 6379, 'key', baseObject);
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key', baseObject);
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -46,7 +46,7 @@ logger.close();
 
 Using a base function for each log:
 ```js
-var LogstashRedis = require('logstash-redis');
+var logstashRedis = require('logstash-redis');
 
 var baseFunction = function(){
   return  {
@@ -58,22 +58,24 @@ var baseFunction = function(){
   };
 };
 
-var logger = new LogstashRedis('127.0.0.1', 6379, 'key', baseFunction);
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key', baseFunction);
 
 logger.log({ a: 1234, b: 'hello' });
 
 logger.close();
 ```
 
-### new (host, port, key, [base])
+# API
+
+### createLogger(host, port, key, [base])
 
 Initiate a Redis connection. When the `base` parameter is specified, it is used as a base for each log object. It can be an object or a function.
 
-### log(data, [callback])
+### logger.log(data, [callback])
 
 Logs some data asynchronously. Data is a valid javascript object. If a base object or function had been provided during initialisation, data will extend it.
 
-### close([callback]);
+### logger.close([callback]);
 
 Cleanly closes the Redis connection (all replies will be parsed).
 
@@ -81,9 +83,9 @@ Cleanly closes the Redis connection (all replies will be parsed).
 
 It does exactly nothing. Good for testing.
 ```js
-var LogstashRedis = require('logstash-redis');
+var logstashRedis = require('logstash-redis');
 
-var logger = LogstashRedis.createNullLogger();
+var logger = logstashRedis.createNullLogger();
 
 logger.log({ a: 1234, b: 'hello' });
 // does nothing
@@ -104,5 +106,6 @@ MIT
 
 # Contributors
 
+* [@matteofigus](https://github.com/matteofigus)
 * [@ArnoldZokas](https://github.com/ArnoldZokas)
 * [@gondar](https://github.com/gondar)

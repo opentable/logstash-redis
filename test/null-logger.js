@@ -1,4 +1,4 @@
-var LogstashRedis = require('../lib/index');
+var LogstashRedis = require('../lib/logstash-redis');
 var should = require('should');
 
 describe('The NullLogger', function(){

@@ -32,7 +32,12 @@ Using a base object for each log:
 ```js
 var LogstashRedis = require('logstash-redis');
 
-var logger = new LogstashRedis('127.0.0.1', 6379, 'key', { type: 'someValue', env: "prod-1234" });
+var baseObject = { 
+  type: 'someValue', 
+  env: "prod-1234" 
+};
+
+var logger = new LogstashRedis('127.0.0.1', 6379, 'key', baseObject);
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -64,11 +69,11 @@ Initiate a Redis connection, prepares the base log object.
 
 ### log(data, [callback])
 
-Logs some data asynchronously. Data is a valid javascript object.
+Logs some data asynchronously. Data is a valid javascript object. If a base object or function had been provided during initialisation, data will extend it.
 
 ### close([callback]);
 
-Properly closes the Redis connection.
+Cleanly closes the Redis connection (all replies will be parsed).
   
 # Tests
 
@@ -79,3 +84,8 @@ npm test
 # License
 
 MIT
+
+# Contributors
+
+* [@ArnoldZokas](https://github.com/ArnoldZokas)
+* [@gondar](https://github.com/gondar)

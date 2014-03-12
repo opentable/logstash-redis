@@ -52,7 +52,7 @@ var baseFunction = function(){
   return  {
     type: 'someValue',
     meta: {
-      timestamp: new Data().toISOString(),
+      timestamp: new Date().toISOString(),
       host: require('os').hostname()
     }
   };

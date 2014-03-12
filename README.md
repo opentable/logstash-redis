@@ -51,7 +51,7 @@ var LogstashRedis = require('logstash-redis');
 var baseFunction = function(){
   type: 'someValue',
   meta: {
-    time: new Data().toISOString(),
+    timestamp: new Data().toISOString(),
     host: require('os').hostname()
   }
 };

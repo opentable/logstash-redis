@@ -1,6 +1,6 @@
 {
   "name": "logstash-redis",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Uber simple Logstash logging using Redis",
   "author": "Matteo Figus <matteofigus@gmail.com>",
   "license": "MIT",

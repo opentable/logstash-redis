@@ -21,8 +21,8 @@
     "npm": ">=1.2.x"
   },
   "dependencies": {
-    "redis": "0.10.1",
-    "underscore": "~1.6.0"
+    "redis": "0.12.1",
+    "underscore": "~1.8.3"
   },
   "devDependencies": {
     "should": "~3.1.3",

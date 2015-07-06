@@ -75,6 +75,10 @@ Initiate a Redis connection. When the `base` parameter is specified, it is used 
 
 Logs some data asynchronously. Data is a valid javascript object. If a base object or function had been provided during initialisation, data will extend it.
 
+### logger.onError(fn)
+
+Subscribes a function `fn` to the error event. When the error will happen `fn` will be executed with some error details as parameter.
+
 ### logger.close([callback]);
 
 Cleanly closes the Redis connection (all replies will be parsed).

@@ -1,145 +1,159 @@
-var LogstashRedis = require('../lib/logger');
-var should = require('should');
+var expect = require('chai').expect;
+var sinon = require('sinon');
 var _ = require('underscore');
 
-var FakeRedisClient = function(){
-  this.parameters = {
-    host: null,
-    port: null,
-    log: [],
-    closed: false
+var LogstashRedis = require('../lib/logger');
+
+var subscribers;
+var buildFakeRedisClient = function(){
+  
+  var client;
+
+  client = {
+    createClient: sinon.stub(),
+    on: null,
+    quit: sinon.spy(),
+    rpush: sinon.stub().yields('called')
   };
 
-  return _.extend(this, {
-    createClient: function(port, host){
-      this.parameters.host = host;
-      this.parameters.port = port;
+  subscribers = {};
+  client.createClient.returns(client);
 
-      return this;
-    },
-    on: function(){
-      return this;
-    },
-    rpush: function(key, data, callback){
-      this.parameters.log.push([key, data]);
-      callback();
-    },
-    quit: function(){
-      this.parameters.closed = true;
+  client.on = function(eventName, subscriber){
+    if(!subscribers[eventName]){
+      subscribers[eventName] = [];
     }
-  });
+
+    subscribers[eventName].push(subscriber);
+    return client;   
+  };
+
+  return client;
 };
 
+var fireClientEvent = function(name, eventData){
+  if(!!subscribers && !!subscribers[name]){
+    for(var i = 0; i < subscribers[name].length; i++){
+      subscribers[name][i](eventData);
+    }
+  }
+};
 
 describe('LogstashRedis', function(){
 
-  it('should init a new session with the correct parameters', function(done){
-    var fakeRedisClient = new FakeRedisClient();
+  var fakeClient;
+  beforeEach(function(){
+    fakeClient = buildFakeRedisClient();
+  });
 
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key');
+  it('should init a new session with the correct parameters', function(){
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key');
 
-    fakeRedisClient.parameters.host.should.be.eql('127.0.0.89');
-    fakeRedisClient.parameters.port.should.be.eql(1234);
-
-    done();
+    expect(fakeClient.createClient.called).to.be.true;
+    expect(fakeClient.createClient.args[0]).to.eql([1234, '127.0.0.89']);
   });
 
   it('should log with the correct key', function(done){
-    var fakeRedisClient = new FakeRedisClient();
-
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key');
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key');
 
     logger.log({}, function(){
-      fakeRedisClient.parameters.log.length.should.be.eql(1);
-      fakeRedisClient.parameters.log[0][0].should.be.eql('key');
+      expect(fakeClient.rpush.called).to.be.true;
+      expect(fakeClient.rpush.args[0][0]).to.eql('key');
       done();
     });
   });
 
   it('should log with the correct key and data when initialised with a null base object', function(done){
-    var fakeRedisClient = new FakeRedisClient();
-
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key');
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key');
 
     var myData = { aProperty: 'someValue' };
 
     logger.log(myData, function(){
-      fakeRedisClient.parameters.log.length.should.be.eql(1);
-      fakeRedisClient.parameters.log[0][0].should.be.eql('key');
-      JSON.parse(fakeRedisClient.parameters.log[0][1]).should.be.eql(myData);
+      expect(fakeClient.rpush.args[0][0]).to.eql('key');
+      expect(fakeClient.rpush.args[0][1]).to.eql(JSON.stringify({ aProperty: 'someValue' }));
       done();
     });
   });
 
   it('should log with the correct key and data when initialised with a base object', function(done){
-    var fakeRedisClient = new FakeRedisClient();
     var myData = { b: 'someValue' };
     var myData2 = { c: 'someDifferentValue' };
 
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key', { a: 1234 });
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key', { a: 1234 });
 
     logger.log(myData, function(){
       logger.log(myData2, function(){
-        fakeRedisClient.parameters.log.length.should.be.eql(2);
-        fakeRedisClient.parameters.log[0][0].should.be.eql('key');
-        JSON.parse(fakeRedisClient.parameters.log[0][1]).should.be.eql({
+
+        expect(fakeClient.rpush.args.length).to.be.eql(2);
+        expect(fakeClient.rpush.args[0][0]).to.be.eql('key');
+        expect(fakeClient.rpush.args[0][1]).to.be.eql(JSON.stringify({
           a: 1234,
           b: 'someValue'
-        });
-        fakeRedisClient.parameters.log[1][0].should.be.eql('key');
-        JSON.parse(fakeRedisClient.parameters.log[1][1]).should.be.eql({
+        }));
+        expect(fakeClient.rpush.args[1][0]).to.be.eql('key');
+        expect(fakeClient.rpush.args[1][1]).to.be.eql(JSON.stringify({
           a: 1234,
           c: 'someDifferentValue'
-        });
+        }));
+
         done();
       });
     });
   });
 
   it('should log with the correct key and data when initialised with a base function', function(done){
-    var fakeRedisClient = new FakeRedisClient();
 
-    var functionCallCounter = 0;
+    var c = 0;
     var baseFunction = function(){
-      functionCallCounter++;
+      c++;
       return {
         x: 1234,
-        y: functionCallCounter
+        y: c
       };
     };
+
     var myData = { a: 'someValue' };
     var myData2 = { b: 'someOtherValue' };
 
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key', baseFunction);
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key', baseFunction);
 
     logger.log(myData, function(){
       logger.log(myData2, function(){
-        fakeRedisClient.parameters.log.length.should.be.eql(2);
-        fakeRedisClient.parameters.log[0][0].should.be.eql('key');
-        JSON.parse(fakeRedisClient.parameters.log[0][1]).should.be.eql({
+
+        expect(fakeClient.rpush.args[0][0]).to.be.eql('key');
+        expect(JSON.parse(fakeClient.rpush.args[0][1])).to.be.eql({
           a: 'someValue',
           x: 1234,
           y: 1
         });
-        fakeRedisClient.parameters.log[1][0].should.be.eql('key');
-        JSON.parse(fakeRedisClient.parameters.log[1][1]).should.be.eql({
+        expect(fakeClient.rpush.args[1][0]).to.be.eql('key');
+        expect(JSON.parse(fakeClient.rpush.args[1][1])).to.be.eql({
           b: 'someOtherValue',
           x: 1234,
           y: 2
         });
-        functionCallCounter.should.be.eql(2);
+
         done();
       });
     });
   });
 
-  it('should close the connection', function(done){
-    var fakeRedisClient = new FakeRedisClient();
+  it('should emit an error event when the redis library emits an error event', function(){
+    var logger = new LogstashRedis(fakeClient, '127.0.0.14', 3423, 'logKey');
+    var errorCb = sinon.spy();
 
-    var logger = new LogstashRedis(fakeRedisClient, '127.0.0.89', 1234, 'key');
+    logger.onError(errorCb);
+
+    fireClientEvent('error', { errorDetails: 'hello' });
+
+    expect(errorCb.called).to.be.true;
+    expect(errorCb.args[0][0]).to.eql({ errorDetails: 'hello' });
+  });
+
+  it('should close the connection', function(){
+    var logger = new LogstashRedis(fakeClient, '127.0.0.89', 1234, 'key');
     logger.close();
 
-    fakeRedisClient.parameters.closed.should.be.true;
-    done();
+    expect(fakeClient.quit.called).to.be.true;
   });
 });

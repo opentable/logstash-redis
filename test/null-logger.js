@@ -1,15 +1,12 @@
+var expect = require('chai').expect;
 var LogstashRedis = require('../lib/logstash-redis');
-var should = require('should');
 
 describe('The NullLogger', function(){
 
-  it('should implement proper functions that do nothing', function(done){
-
+  it('should implement proper functions that do nothing', function(){
     var logger = LogstashRedis.createNullLogger();
 
-    logger.log.should.be.type('function');
-    logger.close.should.be.type('function');
-
-    done();
+    expect(typeof(logger.log)).to.equal('function');
+    expect(typeof(logger.close)).to.equal('function')
   });
 });

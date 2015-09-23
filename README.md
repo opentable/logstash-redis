@@ -1,7 +1,7 @@
 logstash-redis
 =============
 
-Uber simple Logstash logging using Redis
+Uber simple Logstash logging using a Redis list as input.
 
 Node version: **0.8.0** required
 
@@ -21,7 +21,7 @@ The simple way:
 ```js
 var logstashRedis = require('logstash-redis');
 
-var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key');
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'listName');
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -37,7 +37,7 @@ var baseObject = {
   env: "prod-1234"
 };
 
-var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key', baseObject);
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'listName', baseObject);
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -58,7 +58,7 @@ var baseFunction = function(){
   };
 };
 
-var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key', baseFunction);
+var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'listName', baseFunction);
 
 logger.log({ a: 1234, b: 'hello' });
 
@@ -69,7 +69,7 @@ logger.close();
 
 ### createLogger(host, port, key, [base])
 
-Initiate a Redis connection. When the `base` parameter is specified, it is used as a base for each log object. It can be an object or a function.
+Initiate a Redis connection using a specific list. When the `base` parameter is specified, it is used as a base for each log object. It can be an object or a function.
 
 ### logger.log(data, [callback])
 
@@ -107,9 +107,3 @@ npm test
 # License
 
 MIT
-
-# Contributors
-
-* [@matteofigus](https://github.com/matteofigus)
-* [@ArnoldZokas](https://github.com/ArnoldZokas)
-* [@gondar](https://github.com/gondar)
